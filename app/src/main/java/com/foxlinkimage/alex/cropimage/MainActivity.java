@@ -13,13 +13,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.File;
-
 
 public class MainActivity extends ActionBarActivity {
     ImageView img;
     Button btnCrop;
-    File file;
+    String file;
     private static final int PHOTO_REQUEST_CUT = 2;// 從相冊中選擇
 
     @Override
@@ -31,29 +29,25 @@ public class MainActivity extends ActionBarActivity {
         btnCrop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File pic_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-                String name = "20150225_101325.jpg";
-                file = new File(pic_path,name);
+                String pic_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+                String name = "/MyPicFolder/20150225_101325.jpg";
+                file = pic_path + name;
 
-                Uri uri2 = null;
-                uri2.fromFile(file);
 
-                crop(uri2);
+                Uri uri2 = Uri.parse(file);
+
+                Intent it = new Intent("com.android.camera.action.CROP");
+                it.setDataAndType(uri2,"image/*");
+                it.putExtra("crop",true);
+                it.putExtra("aspectX",4);
+                it.putExtra("aspectY",3);
+                it.putExtra("outputFormat", "JPEG");
+                it.putExtra("return-data", false);
+                startActivityForResult(it, PHOTO_REQUEST_CUT);
             }
         });
     }
 
-    private void crop(Uri uri)
-    {
-        Intent it = new Intent("com.android.camera.action.CROP");
-        it.setDataAndType(uri,"image/*");
-        it.putExtra("crop",true);
-        it.putExtra("aspectX",4);
-        it.putExtra("aspectY",3);
-        it.putExtra("outputFormat", "JPEG");
-        it.putExtra("return-data", false);
-        startActivityForResult(it, PHOTO_REQUEST_CUT);
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
