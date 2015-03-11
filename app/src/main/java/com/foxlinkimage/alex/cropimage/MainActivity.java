@@ -13,12 +13,15 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.File;
+
 
 public class MainActivity extends ActionBarActivity {
     ImageView img;
     Button btnCrop;
-    String file;
-    private static final int PHOTO_REQUEST_CUT = 2;// 從相冊中選擇
+    //String file;
+    //private static final int PHOTO_REQUEST_CUT = 2;// 從相冊中選擇
+    private static final int PICK_FROM_GALLERY = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,46 +34,42 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View v) {
                 String pic_path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
                 String name = "/MyPicFolder/20150225_101325.jpg";
-                file = pic_path + name;
+
+                File file = new File(pic_path,name);
+                Uri uri = Uri.fromFile(file);
 
 
-                Uri uri2 = Uri.parse(file);
+                Intent intent = new Intent("com.android.camera.action.CROP");
+                intent.setDataAndType(uri, "image/*");
 
-                Intent it = new Intent("com.android.camera.action.CROP");
-                it.setDataAndType(uri2,"image/*");
-                it.putExtra("crop",true);
-                it.putExtra("aspectX",4);
-                it.putExtra("aspectY",3);
-                it.putExtra("outputFormat", "JPEG");
-                it.putExtra("return-data", false);
-                startActivityForResult(it, PHOTO_REQUEST_CUT);
+                intent.putExtra("crop", "true");
+                intent.putExtra("aspectX", 1);
+                intent.putExtra("aspectY", 1);
+                intent.putExtra("outputX", 256);
+                intent.putExtra("outputY", 256);
+
+                try {
+                    intent.putExtra("return-data", true);
+                    startActivityForResult(intent, PICK_FROM_GALLERY);
+
+                } catch (Exception e)
+                {
+                    Toast.makeText(MainActivity.this, e.getStackTrace().toString(),Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        switch(requestCode)
-        {
-            case PHOTO_REQUEST_CUT:
-                Bundle bundle = data.getExtras();
-                if (bundle != null) {
-                    Bitmap photo = bundle.getParcelable("data");
-                    if (photo == null)
-                    {
-                        Toast.makeText(MainActivity.this,"Null photo",Toast.LENGTH_SHORT).show();
-                    }else
-                    {
-                        img.setImageBitmap(photo);
-                    }
-
-                }
-                break;
-
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_FROM_GALLERY) {
+            Bundle extras2 = data.getExtras();
+            if (extras2 != null) {
+                Bitmap photo = extras2.getParcelable("data");
+                img.setImageBitmap(photo);
+            }
         }
-
     }
 
     @Override
